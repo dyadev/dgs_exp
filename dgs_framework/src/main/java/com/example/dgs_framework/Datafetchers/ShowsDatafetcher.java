@@ -1,8 +1,11 @@
 package com.example.dgs_framework.Datafetchers;
 
 import com.example.dgs_framework.DgsConstants;
+import com.example.dgs_framework.Repository.PagingAndSortRepository;
+import com.example.dgs_framework.Services.ShowService;
 import com.example.dgs_framework.Types.Show;
 import com.example.dgs_framework.Types.ShowInput;
+import com.example.dgs_framework.Types.ShowResponse;
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsData;
 import com.netflix.graphql.dgs.DgsQuery;
@@ -12,6 +15,7 @@ import graphql.relay.SimpleListConnection;
 import graphql.schema.DataFetchingEnvironment;
 import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
+import org.springframework.data.domain.PageRequest;
 import reactor.core.publisher.ConnectableFlux;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
@@ -28,8 +32,10 @@ import java.util.stream.Collectors;
 @DgsComponent
 public class ShowsDatafetcher {
 
+  private final int element_per_page = 2;
   private FluxSink<Show> showStream;
   private ConnectableFlux<Show> showPublisher;
+  ShowService showService;
 
   @PostConstruct
   public void init() {
@@ -41,6 +47,10 @@ public class ShowsDatafetcher {
     showPublisher.connect();
   }
 
+
+  public ShowsDatafetcher(ShowService showService){
+    this.showService = showService;
+  }
 
   @DgsQuery
   public Connection<Show> shows(DataFetchingEnvironment dataFetchingEnvironment) {
@@ -119,13 +129,9 @@ public class ShowsDatafetcher {
           field = "addItem"
   )
   public Show addShow(@InputArgument ShowInput add){
-    log.info("AAArgument: {}",add.toString());
+    log.info("ADD : {}",add.toString());
 
-    Show ms = Show.newBuilder()
-            .title(add.getTitle())
-            .releaseYear(add.getReleaseYear())
-            .build();
-
+    Show ms = showService.addShow(add);
     showStream.next(ms);
 
     return ms;
@@ -138,6 +144,32 @@ public class ShowsDatafetcher {
   public Publisher<Show> sub_show_added(){
     log.info("showAdded");
     return showPublisher.publish();
+  }
+
+  @DgsData(
+          parentType = "Query",
+          field = "showPages"
+  )
+  public ShowResponse getShowsbyPage(@InputArgument Integer page){
+
+    if(page<=1){
+      page = 0;
+    }else {
+      page -= 1;
+    }
+
+    Long numberOfElement = showService.countOfData();
+    double totalPages = numberOfElement/element_per_page;
+    totalPages = Math.ceil(totalPages);
+    List<Show> data = showService.getContentFromPage(showService.showByPage(PageRequest.of(page, element_per_page)));
+    log.info("DATA Result : {}",data);
+    return ShowResponse.newBuilder()
+            .setTotalItems(data.size())
+            .setTotalPages((int) totalPages)
+            .setItems(data)
+            .setHasNextPage(page<totalPages)
+            .setHasPreviousPage(page>1 && totalPages>1)
+            .build();
   }
 
 }

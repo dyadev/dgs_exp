@@ -2,6 +2,15 @@ type Query {
     shows(first:Int! after:String titleFilter:String sort:ShowSort): ShowConnection
     showAll:[Show]!
     users:[User]!
+    showPages(page:Int!):ShowResponse
+}
+
+type ShowResponse {
+    totalItems: Int
+    totalPages: Int
+    hasNextPage: Boolean
+    hasPreviousPage: Boolean
+    items: [Show]
 }
 
 type Mutation {

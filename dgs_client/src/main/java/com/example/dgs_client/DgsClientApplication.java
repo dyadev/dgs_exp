@@ -90,7 +90,6 @@ public class DgsClientApplication implements CommandLineRunner {
             log.info("Data extracted from Response");
             somefield.subscribe(r-> {
                 ArrayList edges = (ArrayList) ((LinkedHashMap<String, ?>) r).get("edges");
-
                 edges.stream().forEach(i -> System.out.println( i));
             });
 

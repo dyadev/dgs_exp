@@ -1,18 +1,35 @@
 package com.example.dgs_framework.Types;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.Data;
+
+import javax.persistence.*;
 import java.lang.Integer;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 
-@JsonTypeInfo(
-    use = JsonTypeInfo.Id.NONE
-)
+@Entity
+@Data
+@Table(name="shows")
 public class Show implements IShow {
-  private String title;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "id", nullable = false)
+  private Long id;
 
+  @Column(name="title")
+  private String title;
+  @Column(name="releaseYear")
   private Integer releaseYear;
+
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
 
   public Show() {
   }
