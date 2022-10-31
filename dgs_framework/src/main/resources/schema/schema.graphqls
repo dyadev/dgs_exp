@@ -1,0 +1,78 @@
+type Query {
+    shows(first:Int! after:String titleFilter:String sort:ShowSort): ShowConnection
+    showAll:[Show]!
+    users:[User]!
+}
+
+type Mutation {
+    addItem(add: ShowInput):Show!
+    addUser(user: UserInput):User
+    deleteUser(email:String!):String!
+    updateUser(email:String!, user:UserInput):User
+}
+
+type Show @connection {
+    title: String
+    releaseYear: Int
+}
+
+input ShowInput{
+    title: String
+    releaseYear: Int
+}
+
+input ShowSort{
+    title: Sort
+    releaseYear: Sort
+}
+
+enum Sort{
+    asc
+    desc
+}
+
+type Subscription{
+    showAdded:Show!
+}
+
+type User{
+    nom:String!
+    prenom:String
+    mail:String!
+    password:String!
+}
+
+input UserInput{
+    nom:String!
+    prenom:String
+    mail:String!
+    password:String!
+}
+
+#"ShowConnection"
+#type ShowConnection {
+#    "Field edges"
+#    edges: [ShowEdge]
+#    "Field pageInfo"
+#    pageInfo: PageInfo
+#}
+#
+#"MessageEdge"
+#type ShowEdge {
+#    "Field node"
+#    node: Show
+#    "Field cursor"
+#    cursor: String
+#}
+#
+#"PageInfo"
+#type PageInfo {
+#    "Field hasPreviousPage"
+#    hasPreviousPage: Boolean!
+#    "Field hasNextPage"
+#    hasNextPage: Boolean!
+#    "Field startCursor"
+#    startCursor: String
+#    "Field endCursor"
+#    endCursor: String
+#}
